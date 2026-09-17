@@ -1,0 +1,16 @@
+import express from "express";
+import authRouter from "./app/auth/route.js";
+import userRouter from "./app/user/route.js";
+import messageRouter from "./app/message/route.js";
+const app = express();
+
+
+app.use(express.json());
+
+app.use('/auth',authRouter);
+app.use('/user',userRouter);
+app.use('/message',messageRouter);
+
+app.listen(3000, () => {
+    console.log("Server started on port 3000");
+})
