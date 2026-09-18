@@ -1,4 +1,6 @@
+import "./config.js"; 
 import express from "express";
+import './common/db/mongoose.js'
 import authRouter from "./app/auth/route.js";
 import userRouter from "./app/user/route.js";
 import messageRouter from "./app/message/route.js";
