@@ -6,7 +6,7 @@ export function toMs(unit, time) {
         case "minutes":
             return time * 60 * 1000
             break;
-        case "seconds":
+        case "hours":
             return time * 60 * 60 * 1000
             break;
         default:
@@ -22,7 +22,7 @@ export function toSec(unit, time) {
         case "minutes":
             return time * 60
             break;
-        case "seconds":
+        case "hours":
             return time * 60 * 60
             break;
         default:

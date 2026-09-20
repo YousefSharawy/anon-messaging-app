@@ -1,11 +1,12 @@
 import * as authRepo from '../repo/auth.repo.js';
 import * as otpRepo from '../repo/otp.repo.js';
 import * as userRepo from '../../user/repo/user.repo.js';
-import { sendEmail } from '../../../common/email/nodemailer.js'
-import { otpTemplate } from '../../../common/email/otp.template.js'
+import { sendEmail } from '../../../common/email/nodemailer.js';
+import { otpTemplate } from '../../../common/email/otp.template.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import {toMs} from '../../../common/utils/convert_time_units.js' 
+import { toMs } from '../../../common/utils/convert_time_units.js';
+import jwt from 'jsonwebtoken';
 
 
 
@@ -23,7 +24,7 @@ export async function register(userData) {
     await otpRepo.createOTP({
         code: OTP,
         email: userData.email,
-        expiresAt: Date.now() +toMs('minutes' , 5),
+        expiresAt: Date.now() + toMs('minutes', 5),
     });
     //send Otp
     await sendEmail(
@@ -55,4 +56,24 @@ export async function verifyAccount(email, code) {
 
     return verifiedUser;
 
+}
+
+export async function login(email, password) {
+    const user = await authRepo.checkUserExistByEmail(email);
+    if (!user) throw new Error('User doesn\'t exist');
+    if (user.isVerifired === false) throw new Error('User is not verified yet');
+    const match = bcrypt.compare(password, user.password);
+    if (!match) throw new Error('invalid creds');
+
+    const token = jwt.sign({
+        id: user.id,
+        email: user.email,
+        name: user.name
+    },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: toMs('hours', 1)
+        });
+
+    return token;
 }

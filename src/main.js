@@ -7,6 +7,7 @@ import messageRouter from "./app/message/route.js";
 const app = express();
 
 
+
 app.use(express.json());
 
 app.use('/auth',authRouter);
@@ -16,7 +17,6 @@ app.use('/message',messageRouter);
 app.use((err, req, res, next) => {
     res.status(500).json({ success: false, message: err.message });
 });
-
 app.listen(3000, () => {
     console.log("Server started on port 3000");
 })
