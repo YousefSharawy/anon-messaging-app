@@ -42,3 +42,15 @@ export async function login(req, res, next) {
         next(error)
     }
 }
+export async function sendOTP(req, res, next) {
+    try {
+        const { email } = req.body;
+        await authService.sendOTP(email);
+        res.status(200).json({
+            message: "OTP has been sent to your email",
+            success: true,
+        });
+    } catch (error) {
+        next(error)
+    }
+}

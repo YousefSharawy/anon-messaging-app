@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { toMs } from '../../../common/utils/convert_time_units.js';
 import jwt from 'jsonwebtoken';
-
+import { generateOTP } from '../../../common/utils/otp.js'
 
 
 export async function register(userData) {
@@ -20,7 +20,7 @@ export async function register(userData) {
     //save user data,
     const createdUser = await authRepo.createUser(userData);
     //save otp
-    const OTP = crypto.randomInt(100000, 999999).toString();
+    const OTP = generateOTP();
     await otpRepo.createOTP({
         code: OTP,
         email: userData.email,
@@ -76,4 +76,22 @@ export async function login(email, password) {
         });
 
     return token;
+}
+export async function sendOTP(email) {
+    const user = await authRepo.checkUserExistByEmail(email);
+    if (!user) throw new Error('User doesn\'t exist');
+    await otpRepo.deleteOtpByEmail(email);
+    const OTP = generateOTP();
+    await otpRepo.createOTP(
+        {
+            code: OTP,
+            email: email,
+            expiresAt: Date.now() + toMs('minutes', 5)
+        }
+    );
+    await sendEmail(
+        email,
+        'New OTP',
+        otpTemplate(OTP),
+    );
 }
