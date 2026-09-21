@@ -62,7 +62,7 @@ export async function login(email, password) {
     const user = await authRepo.checkUserExistByEmail(email);
     if (!user) throw new Error('User doesn\'t exist');
     if (user.isVerifired === false) throw new Error('User is not verified yet');
-    const match = bcrypt.compare(password, user.password);
+    const match = await bcrypt.compare(password, user.password);
     if (!match) throw new Error('invalid creds');
 
     const token = jwt.sign({
