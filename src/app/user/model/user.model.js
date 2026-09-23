@@ -12,7 +12,7 @@ const userSchema = new Schema({
         required: true,
         trim: true,
         lowercase: true,
-        minlenght: 3,
+        minlength: 3,
         maxlenght: 25,
     },
     password: {
@@ -32,8 +32,18 @@ const userSchema = new Schema({
         enum: ['male', 'female'],
         default: 'male'
     },
-
-
+    isVerified: {
+        type: Boolean,
+        default: false
+    }
 },
-    { timestamps: true });
+    {
+        timestamps: true,
+        toJSON: {
+            transform(doc, ret) {
+                delete ret.password;
+                return ret;
+            }
+        }
+    });
 export const User = model('User', userSchema);
