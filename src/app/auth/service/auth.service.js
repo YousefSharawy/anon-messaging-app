@@ -8,7 +8,7 @@ import { generateOTP } from '../../../common/utils/otp.js'
 import { userAlreadyExists, userAlreadyVerified, userDoesNotExist, userIsNotVerified } from '../../user/errors.js';
 import { otpIsExpired, invalidCredentials, invalidCode } from '../errors.js';
 import { generateToken } from '../../../common/utils/token/token.js';
-import { hashPassword , comparePassword } from '../../../common/utils/hash/hash.js';
+import { hashPassword, comparePassword } from '../../../common/utils/hash/hash.js';
 
 export async function register(userData) {
     //cehck user existsence
@@ -16,7 +16,7 @@ export async function register(userData) {
     //yes->error
     if (userExistence) throw userAlreadyExists;
     //prepare data [hash password]
-    userData.password  = hashPassword(userData.password);
+    userData.password = await hashPassword(userData.password);
     //save user data,
     const createdUser = await authRepo.createUser(userData);
     //save otp
@@ -61,7 +61,7 @@ export async function login(email, password) {
     const user = await authRepo.checkUserExistByEmail(email);
     if (!user) throw userDoesNotExist;
     if (!user.isVerified) throw userIsNotVerified;
-    const match = comparePassword(password, user.password);
+    const match = await comparePassword(password, user.password);
     if (!match) throw invalidCredentials;
     const token = generateToken({
         id: user.id,
@@ -88,4 +88,12 @@ export async function sendOTP(email) {
         'New OTP',
         otpTemplate(OTP),
     );
+}
+export async function resetPassword(email, code, newPassword) {
+    const otp = await otpRepo.getOtpByEmail(email);
+    if (!otp) throw otpIsExpired;
+    if (otp.code !== code) throw invalidCode;
+    const hashedPassword = await hashPassword(newPassword);
+    await userRepo.updateUserByEmail(email, { password: hashedPassword });
+    await otpRepo.deleteOtpByEmail(email);
 }

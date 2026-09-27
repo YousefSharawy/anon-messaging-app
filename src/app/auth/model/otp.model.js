@@ -3,7 +3,7 @@ const otpSchema = new Schema({
     code: {
         type: String,
         required: true,
-        lenght: 6,
+        length: 6,
     },
     email: {
         type: String,

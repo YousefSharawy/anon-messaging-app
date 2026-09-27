@@ -1,8 +1,9 @@
 import { Router } from "express";
 const authRouter = Router();
 import * as authController from './controller/auth.controller.js';
-authRouter.post('/register', authController.register)
-authRouter.patch('/verify-account', authController.verifyAccount)
-authRouter.post('/login', authController.login)
-authRouter.post('/send-otp', authController.sendOTP)
+authRouter.post('/register', authController.register);
+authRouter.patch('/verify-account', authController.verifyAccount);
+authRouter.post('/login', authController.login);
+authRouter.post('/send-otp', authController.sendOTP);
+authRouter.patch('/reset-password', authController.resetPassword);
 export default authRouter;
