@@ -9,6 +9,8 @@ import { userAlreadyExists, userAlreadyVerified, userDoesNotExist, userIsNotVeri
 import { otpIsExpired, invalidCredentials, invalidCode } from '../errors.js';
 import { generateToken } from '../../../common/utils/token/token.js';
 import { hashPassword, comparePassword } from '../../../common/utils/hash/hash.js';
+import { verifyGoogleToken } from '../../../common/utils/token/google.auth.js';
+
 
 export async function register(userData) {
     //cehck user existsence
@@ -96,4 +98,30 @@ export async function resetPassword(email, code, newPassword) {
     const hashedPassword = await hashPassword(newPassword);
     await userRepo.updateUserByEmail(email, { password: hashedPassword });
     await otpRepo.deleteOtpByEmail(email);
+}
+
+
+export async function loginWithGoogle(idToken) {
+    // ? 1 - verify idToken
+    const payload = await verifyGoogleToken(idToken);
+    // ? 2-cehck user existence
+    const user = authRepo.checkUserExistByEmail(payload.email);
+    // ? if exist -> send Token
+    if (user) {
+        return generateToken({
+            id: user.id,
+            name: user.email,
+        })
+    }
+    // ? if not -> create user and generate the token 
+    const createdUser = await authRepo.createUser({
+        name: payload.name,
+        email: payload.email,
+        provider: 'google',
+        isVerified: true,
+    });
+    return generateToken({
+        id: createdUser.id,
+        email: createdUser.email
+    });
 }
