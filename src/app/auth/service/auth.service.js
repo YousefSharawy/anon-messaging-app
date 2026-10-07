@@ -1,15 +1,15 @@
 import * as authRepo from '../repo/auth.repo.js';
 import * as otpRepo from '../repo/otp.repo.js';
 import * as userRepo from '../../user/repo/user.repo.js';
-import { sendEmail } from '../../../common/email/nodemailer.js';
-import { otpTemplate } from '../../../common/email/otp.template.js';
-import { toMs, toSec } from '../../../common/utils/convert_time_units.js';
-import { generateOTP } from '../../../common/utils/otp.js'
+import { sendEmail } from '../../../lib/email/nodemailer.js';
+import { otpTemplate } from '../../../lib/email/otp.template.js';
+import { toMs, toSec } from '../../../pkg/utils/convert_time_units.js';
+import { generateOTP } from '../../../pkg/utils/otp.js'
 import { userAlreadyExists, userAlreadyVerified, userDoesNotExist, userIsNotVerified } from '../../user/errors.js';
 import { otpIsExpired, invalidCredentials, invalidCode } from '../errors.js';
-import { generateToken } from '../../../common/utils/token/token.js';
-import { hashPassword, comparePassword } from '../../../common/utils/hash/hash.js';
-import { verifyGoogleToken } from '../../../common/utils/token/google.auth.js';
+import { generateToken } from '../../../lib/token/token.js';
+import { hashPassword, comparePassword } from '../../../pkg/utils/hash/hash.js';
+import { verifyGoogleToken } from '../../../lib/token/google.auth.js';
 
 
 export async function register(userData) {

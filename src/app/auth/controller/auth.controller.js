@@ -1,6 +1,6 @@
-import { toMs } from '../../../common/utils/convert_time_units.js';
+import { toMs } from '../../../pkg/utils/convert_time_units.js'
 import * as authService from '../service/auth.service.js';
-import { validateBody } from '../../../common/validation/validation.js';
+import { validateBody } from '../../../pkg/validation/validation.js';
 import { loginDTO, registerDTO, resetPasswordDTO, sendOtpDTO, verifyAccountDTO } from '../dto/auth.dto.js';
 import { date } from 'zod';
 export async function register(req, res, next) {
