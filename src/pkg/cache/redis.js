@@ -7,8 +7,9 @@ export class RedisCacheProvider {
             host: config.host,
             port: config.port,
             password: config.password,
-            lazyConect: true,
-            maxLoadingRetryTime: 3
+            lazyConnect: true,
+            maxLoadingRetryTime: 3,
+            tls: {}
         });
         this.client.on('error', (err) => console.log('Redis server error:', err.message));
         this.client.connect().catch(err => console.log("Failed connection to Redis", err.message));
@@ -20,7 +21,7 @@ export class RedisCacheProvider {
     async get(key) {
         return this.client.get(key);
     }
-    async del(hey) {
+    async del(key) {
         return this.client.del(key);
     }
 }

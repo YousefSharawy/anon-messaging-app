@@ -1,7 +1,6 @@
 import * as authRepo from '../repo/auth.repo.js';
 import * as otpRepo from '../repo/otp.repo.js';
 import * as userRepo from '../../user/repo/user.repo.js';
-import { sendEmail } from '../../../lib/email/nodemailer.js';
 import { otpTemplate } from '../../../lib/email/otp.template.js';
 import { toMs, toSec } from '../../../pkg/utils/convert_time_units.js';
 import { generateOTP } from '../../../pkg/utils/otp.js'
@@ -10,6 +9,7 @@ import { otpIsExpired, invalidCredentials, invalidCode } from '../errors.js';
 import { generateToken } from '../../../lib/token/token.js';
 import { hashPassword, comparePassword } from '../../../pkg/utils/hash/hash.js';
 import { verifyGoogleToken } from '../../../lib/token/google.auth.js';
+import { mailjetProvider } from '../../../lib/email/init.js';
 
 
 export async function register(userData) {
@@ -29,7 +29,7 @@ export async function register(userData) {
         expiresAt: Date.now() + toMs('minutes', 5),
     });
     //send Otp
-    await sendEmail(
+    await mailjetProvider.sendEmail(
         userData.email,
         "Verification OTP",
         otpTemplate(OTP)
@@ -85,7 +85,7 @@ export async function sendOTP(email) {
             expiresAt: Date.now() + toMs('minutes', 5)
         }
     );
-    await sendEmail(
+    await mailjetProvider.sendEmail(
         email,
         'New OTP',
         otpTemplate(OTP),

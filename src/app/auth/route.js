@@ -1,10 +1,11 @@
 import { Router } from "express";
 const authRouter = Router();
 import * as authController from './controller/auth.controller.js';
+import { idempotency } from '../../lib/idempotency/idempotency.js';
 authRouter.post('/register', authController.register);
 authRouter.patch('/verify-account', authController.verifyAccount);
 authRouter.post('/login', authController.login);
 authRouter.post('/send-otp', authController.sendOTP);
-authRouter.patch('/reset-password', authController.resetPassword);
+authRouter.patch('/reset-password', idempotency(), authController.resetPassword);
 authRouter.post('/google-login', authController.loginWithGoogle);
 export default authRouter;
