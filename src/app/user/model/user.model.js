@@ -1,5 +1,9 @@
 import { model, Schema } from "mongoose";
 const userSchema = new Schema({
+    _id: {
+        type: Schema.Types.ObjectId,
+        auto: true,
+    },
     name: {
         type: String,
         required: true,
@@ -33,6 +37,10 @@ const userSchema = new Schema({
         default: 'male'
     },
     isVerified: {
+        type: Boolean,
+        default: false
+    },
+    isDeleted: {
         type: Boolean,
         default: false
     }

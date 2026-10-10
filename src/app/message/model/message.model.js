@@ -19,7 +19,7 @@ const messageModel = new Schema({
     },
     isDeleted: {
         type: Boolean,
-        default: fasle
+        default: false
     }
 }, {
     timestamps: true,

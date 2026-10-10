@@ -51,7 +51,7 @@ export async function login(req, res, next) {
 export async function sendOTP(req, res, next) {
     try {
         const data = validateBody(sendOtpDTO, req.body);
-        const { email } = date;
+        const { email } = data;
         await authService.sendOTP(email);
         res.status(200).json({
             message: "OTP has been sent to your email",

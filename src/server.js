@@ -5,7 +5,7 @@ import { env } from './lib/config/env.js';
 const app = createApp()
 const server = http.createServer(app);
 import { logger } from './pkg/logger/logger.js';
-
+import './pkg/db/mongoose.js';
 server.listen(env.port, () => {
     logger.info(`server started on port:${env.port}`);
 })

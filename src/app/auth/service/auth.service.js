@@ -105,7 +105,7 @@ export async function loginWithGoogle(idToken) {
     // ? 1 - verify idToken
     const payload = await verifyGoogleToken(idToken);
     // ? 2-cehck user existence
-    const user = authRepo.checkUserExistByEmail(payload.email);
+    const user = await authRepo.checkUserExistByEmail(payload.email);
     // ? if exist -> send Token
     if (user) {
         return generateToken({
