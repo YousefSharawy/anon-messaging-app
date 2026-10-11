@@ -2,7 +2,6 @@ import { toMs } from '../../../pkg/utils/convert_time_units.js'
 import * as authService from '../service/auth.service.js';
 import { validateBody } from '../../../pkg/validation/validation.js';
 import { loginDTO, registerDTO, resetPasswordDTO, sendOtpDTO, verifyAccountDTO } from '../dto/auth.dto.js';
-import { date } from 'zod';
 export async function register(req, res, next) {
     try {
         const data = validateBody(registerDTO, req.body);
@@ -65,7 +64,7 @@ export async function sendOTP(req, res, next) {
 export async function resetPassword(req, res, next) {
     try {
         const data = validateBody(resetPasswordDTO, req.body);
-        const { email, code, newPassword } = date;
+        const { email, code, newPassword } = data;
         await authService.resetPassword(email, code, newPassword);
         res.sendStatus(204);
     }

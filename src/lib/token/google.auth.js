@@ -5,12 +5,12 @@ const client = new OAuth2Client();
 
 export async function verifyGoogleToken(idToken) {
     try {
-        const ticket = await client.verifyidToken({
+        const ticket = await client.verifyIdToken({
             idToken: idToken,
             audience: [`${env.google.webClietId}`],
 
         });
-        return ticket.getPayLoad();
+        return ticket.getPayload();
     }
     catch (err) {
         throw new AppError('Invalid Google Token', 403);

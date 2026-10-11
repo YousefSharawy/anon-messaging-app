@@ -25,4 +25,5 @@ class Logger {
         this.log('debug', message, metaData);
     }
 }
+Logger.instance = undefined;
 export const logger = new Logger(); 
