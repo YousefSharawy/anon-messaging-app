@@ -9,3 +9,14 @@ export async function createMessage(content, sender, reciever) {
         }
     );
 }
+export async function getAllMessages(userId) {
+    return await Message.find(
+        {
+            reciever: userId,
+        },
+        {},
+        {
+            populate: { path: "sender" }
+        }
+    );
+}
