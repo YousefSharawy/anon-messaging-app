@@ -1,4 +1,5 @@
 import { model, Schema } from "mongoose";
+import { type } from "os";
 const userSchema = new Schema({
     _id: {
         type: Schema.Types.ObjectId,
@@ -43,7 +44,15 @@ const userSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
+    cvPath: {
+        type: String
+    },
+    profilePicPath: {
+        type: String
+    },
+    coverImagesPath: [String],
+
 },
     {
         timestamps: true,
