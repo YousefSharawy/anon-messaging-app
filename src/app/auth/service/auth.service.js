@@ -10,6 +10,7 @@ import { generateToken } from '../../../lib/token/token.js';
 import { hashPassword, comparePassword } from '../../../pkg/utils/hash/hash.js';
 import { verifyGoogleToken } from '../../../lib/token/google.auth.js';
 import { mailjetProvider } from '../../../lib/email/init.js';
+import { cacheProvider } from '../../../lib/cache/init.js';
 
 
 export async function register(userData) {
@@ -23,11 +24,7 @@ export async function register(userData) {
     const createdUser = await authRepo.createUser(userData);
     //save otp
     const OTP = generateOTP();
-    await otpRepo.createOTP({
-        code: OTP,
-        email: userData.email,
-        expiresAt: Date.now() + toMs('minutes', 5),
-    });
+    await cacheProvider.set(`otp:${createdUser.email}`, OTP, toSec('minutes', 3));
     //send Otp
     await mailjetProvider.sendEmail(
         userData.email,
@@ -46,25 +43,71 @@ export async function verifyAccount(email, code) {
     // if user verifired -> error 
     if (user.isVerified) throw userAlreadyVerified;
     // if not found the otp -> error
-    const otp = await otpRepo.getOtpByEmail(email);
+    const otp = await cacheProvider.get(`otp:${email}`);
+
     if (!otp) throw otpIsExpired;
 
-    if (otp.code !== String(code)) throw invalidCode;
+    if (otp !== String(code)) throw invalidCode;
     // update user to be verified
     const verifiedUser = await userRepo.updateUserByEmail(email, { isVerified: true });
     // delete otp
-    await otpRepo.deleteOtpByEmail(email);
+    await cacheProvider.del(`otp:${email}`);
 
     return verifiedUser;
 
 }
 
+export async function enable2FactorAuth(email,code) {
+    //check user excistence 
+    const user = await authRepo.checkUserExistByEmail(email);
+    // if user there -> error
+    if (!user) throw userDoesNotExist;
+    // if not found the otp -> error
+    const otp = await cacheProvider.get(`otp:${email}`);
+
+    if (!otp) throw otpIsExpired;
+
+    if (otp !== String(code)) throw invalidCode;
+    // update user to be verified
+    const verifiedUser = await userRepo.updateUserByEmail(email, { is2FactorAuthEnabled: true });
+    // delete otp
+    await cacheProvider.del(`otp:${email}`);
+
+    return verifiedUser;
+
+}
+export async function verify2FactorAuthCodeToLogin(email, code) {
+    //check user excistence 
+    const user = await authRepo.checkUserExistByEmail(email);
+    // if not found the otp -> error
+    if (!user) throw userDoesNotExist;
+
+    const otp = await cacheProvider.get(`otp:${email}`);
+
+    if (!otp) throw otpIsExpired;
+
+    if (otp !== String(code)) throw invalidCode;
+
+    await cacheProvider.del(`otp:${email}`);
+
+    const token = await generateToken({ id: user._id, name: user.name});
+    return token;
+
+}
 export async function login(email, password) {
     const user = await authRepo.checkUserExistByEmail(email);
     if (!user) throw userDoesNotExist;
     if (!user.isVerified) throw userIsNotVerified;
     const match = await comparePassword(password, user.password);
     if (!match) throw invalidCredentials;
+
+    if (user.is2FactorAuthEnabled) {
+        const otp = await generateOTP();
+        await cacheProvider.set(`otp:${email}`, otp, toSec('minutes', 3));
+       await mailjetProvider.sendEmail(email,'2FA Code', otpTemplate(otp));
+        return;
+    }
+
     const token = generateToken({
         id: user.id,
         email: user.email,
@@ -78,13 +121,14 @@ export async function sendOTP(email) {
     if (!user) throw userDoesNotExist;
     await otpRepo.deleteOtpByEmail(email);
     const OTP = generateOTP();
-    await otpRepo.createOTP(
-        {
-            code: OTP,
-            email: email,
-            expiresAt: Date.now() + toMs('minutes', 5)
-        }
-    );
+    // await otpRepo.createOTP(
+    //     {
+    //         code: OTP,
+    //         email: email,
+    //         expiresAt: Date.now() + toMs('minutes', 5)
+    //     }
+    // );
+    await cacheProvider.set(`otp:${email}`, OTP, toSec('minutes', 3));
     await mailjetProvider.sendEmail(
         email,
         'New OTP',
@@ -92,14 +136,13 @@ export async function sendOTP(email) {
     );
 }
 export async function resetPassword(email, code, newPassword) {
-    const otp = await otpRepo.getOtpByEmail(email);
+    const otp = await cacheProvider.get(`otp:${email}`);
     if (!otp) throw otpIsExpired;
-    if (otp.code !== code) throw invalidCode;
+    if (otp !== code) throw invalidCode;
     const hashedPassword = await hashPassword(newPassword);
     await userRepo.updateUserByEmail(email, { password: hashedPassword });
-    await otpRepo.deleteOtpByEmail(email);
+    await cacheProvider.del(`otp:${email}`);
 }
-
 
 export async function loginWithGoogle(idToken) {
     // ? 1 - verify idToken

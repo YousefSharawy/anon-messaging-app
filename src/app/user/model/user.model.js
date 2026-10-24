@@ -41,6 +41,10 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    is2FactorAuthEnabled: {
+        type: Boolean,
+        default: false
+    },
     isDeleted: {
         type: Boolean,
         default: false

@@ -7,5 +7,7 @@ authRouter.patch('/verify-account', authController.verifyAccount);
 authRouter.post('/login', authController.login);
 authRouter.post('/send-otp', authController.sendOTP);
 authRouter.patch('/reset-password', idempotency(), authController.resetPassword);
+authRouter.patch('/enable-2FA', authController.enable2FactorAuth);
+authRouter.post('/verify-to-login', authController.verify2FactorAuthCodeToLogin);
 authRouter.post('/google-login', authController.loginWithGoogle);
 export default authRouter;

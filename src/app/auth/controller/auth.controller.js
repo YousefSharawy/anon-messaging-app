@@ -30,11 +30,26 @@ export async function verifyAccount(req, res, next) {
         next(error)
     }
 }
+export async function enable2FactorAuth(req, res, next) {
+    try {
+        const { email, code } = req.body;
+        await authService.enable2FactorAuth(email, code);
+        res.status(200).json({
+            message: "2FA has been enabled successfully",
+            success: true,
+        });
+    } catch (error) {
+        next(error)
+    }
+}
 export async function login(req, res, next) {
     try {
         const data = validateBody(loginDTO, req.body);
         const { email, password } = data;
         const token = await authService.login(email, password);
+        if (!token) {
+            return res.json({ message: 'check your inbox we have sent new OTP', success: false });
+        }
         res.cookie('access_token', token, {
             httpOnly: true,
             maxAge: toMs('hours', 1),
@@ -60,7 +75,20 @@ export async function sendOTP(req, res, next) {
         next(error)
     }
 }
+export async function verify2FactorAuthCodeToLogin(req, res, next) {
+    try {
+        const { email, code } = req.body;
+        const token = await authService.verify2FactorAuthCodeToLogin(email, code);
+        res.cookie('access_token', token, {
+            httpOnly: true,
+            maxAge: toMs('hours', 1),
+        });
+        res.status(200).json({ message: "logged in successfully", success: true });
+    } catch (error) {
+        next(error);
+    }
 
+}
 export async function resetPassword(req, res, next) {
     try {
         const data = validateBody(resetPasswordDTO, req.body);
