@@ -2,6 +2,7 @@ import { toMs } from '../../../pkg/utils/convert_time_units.js'
 import * as authService from '../service/auth.service.js';
 import { validateBody } from '../../../pkg/validation/validation.js';
 import { loginDTO, registerDTO, resetPasswordDTO, sendOtpDTO, verifyAccountDTO } from '../dto/auth.dto.js';
+import { setCookies } from '../../../pkg/utils/cookies.js';
 export async function register(req, res, next) {
     try {
         const data = validateBody(registerDTO, req.body);
@@ -50,10 +51,8 @@ export async function login(req, res, next) {
         if (!token) {
             return res.json({ message: 'check your inbox we have sent new OTP', success: false });
         }
-        res.cookie('access_token', token, {
-            httpOnly: true,
-            maxAge: toMs('hours', 1),
-        });
+        setCookies(res, token);
+
         res.status(200).json({
             message: "user logged in successfully",
             success: true,
@@ -79,10 +78,7 @@ export async function verify2FactorAuthCodeToLogin(req, res, next) {
     try {
         const { email, code } = req.body;
         const token = await authService.verify2FactorAuthCodeToLogin(email, code);
-        res.cookie('access_token', token, {
-            httpOnly: true,
-            maxAge: toMs('hours', 1),
-        });
+        setCookies(res, token);
         res.status(200).json({ message: "logged in successfully", success: true });
     } catch (error) {
         next(error);
@@ -104,10 +100,8 @@ export async function loginWithGoogle(req, res, next) {
     try {
 
         const token = await authService.loginWithGoogle(req.body.idToken);
-        res.cookie('access_token', token, {
-            httpOnly: true,
-            maxAge: toMs('hours', 1),
-        });
+        setCookies(res, token);
+
         res.status(200).json({ message: "user login successfully", success: true });
     } catch (error) {
         next(error);

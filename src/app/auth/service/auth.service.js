@@ -11,7 +11,44 @@ import { hashPassword, comparePassword } from '../../../pkg/utils/hash/hash.js';
 import { verifyGoogleToken } from '../../../lib/token/google.auth.js';
 import { mailjetProvider } from '../../../lib/email/init.js';
 import { cacheProvider } from '../../../lib/cache/init.js';
+import { AppError } from '../../../pkg/error/error.js';
+async function baseVerifyFunction(email, code, factory) {
+    //check user excistence 
+    const user = await authRepo.checkUserExistByEmail(email);
+    // if user there -> error
+    if (!user) throw userDoesNotExist;
+    // if user verifired -> error 
+    if (user.isVerified) throw userAlreadyVerified;
+    // if not found the otp -> error
+    const otp = await cacheProvider.get(`otp:${email}`);
 
+    if (!otp) throw otpIsExpired;
+
+    if (otp !== String(code)) throw invalidCode;
+    const result = factory(user);
+    await cacheProvider.del(`otp:${email}`);
+    return result;
+
+}
+
+
+export async function verifyAccount(email, code) {
+    await baseVerifyFunction(email, code, async () => {
+        await userRepo.updateUserByEmail(email, { isVerified: true });
+    });
+}
+
+export async function enable2FactorAuth(email, code) {
+    await baseVerifyFunction(email, code, async () => {
+        await userRepo.updateUserByEmail(email, { is2FactorAuthEnabled: true });
+    });
+}
+export async function verify2FactorAuthCodeToLogin(email, code) {
+    await baseVerifyFunction(email, code, async (user) => {
+        const token = await generateToken({ id: user._id, name: user.name });
+        return token;
+    });
+}
 
 export async function register(userData) {
     //cehck user existsence
@@ -34,67 +71,11 @@ export async function register(userData) {
     return createdUser;
 
 }
-
-export async function verifyAccount(email, code) {
-    //check user excistence 
-    const user = await authRepo.checkUserExistByEmail(email);
-    // if user there -> error
-    if (!user) throw userDoesNotExist;
-    // if user verifired -> error 
-    if (user.isVerified) throw userAlreadyVerified;
-    // if not found the otp -> error
-    const otp = await cacheProvider.get(`otp:${email}`);
-
-    if (!otp) throw otpIsExpired;
-
-    if (otp !== String(code)) throw invalidCode;
-    // update user to be verified
-    const verifiedUser = await userRepo.updateUserByEmail(email, { isVerified: true });
-    // delete otp
-    await cacheProvider.del(`otp:${email}`);
-
-    return verifiedUser;
-
-}
-
-export async function enable2FactorAuth(email,code) {
-    //check user excistence 
-    const user = await authRepo.checkUserExistByEmail(email);
-    // if user there -> error
-    if (!user) throw userDoesNotExist;
-    // if not found the otp -> error
-    const otp = await cacheProvider.get(`otp:${email}`);
-
-    if (!otp) throw otpIsExpired;
-
-    if (otp !== String(code)) throw invalidCode;
-    // update user to be verified
-    const verifiedUser = await userRepo.updateUserByEmail(email, { is2FactorAuthEnabled: true });
-    // delete otp
-    await cacheProvider.del(`otp:${email}`);
-
-    return verifiedUser;
-
-}
-export async function verify2FactorAuthCodeToLogin(email, code) {
-    //check user excistence 
-    const user = await authRepo.checkUserExistByEmail(email);
-    // if not found the otp -> error
-    if (!user) throw userDoesNotExist;
-
-    const otp = await cacheProvider.get(`otp:${email}`);
-
-    if (!otp) throw otpIsExpired;
-
-    if (otp !== String(code)) throw invalidCode;
-
-    await cacheProvider.del(`otp:${email}`);
-
-    const token = await generateToken({ id: user._id, name: user.name});
-    return token;
-
-}
 export async function login(email, password) {
+
+    // const cachedTries = await cacheProvider.get(`login-tries:${email}`);
+    // if (cachedTries === '0') throw new AppError('Too many requests', 403);
+
     const user = await authRepo.checkUserExistByEmail(email);
     if (!user) throw userDoesNotExist;
     if (!user.isVerified) throw userIsNotVerified;
@@ -104,10 +85,13 @@ export async function login(email, password) {
     if (user.is2FactorAuthEnabled) {
         const otp = await generateOTP();
         await cacheProvider.set(`otp:${email}`, otp, toSec('minutes', 3));
-       await mailjetProvider.sendEmail(email,'2FA Code', otpTemplate(otp));
+        await mailjetProvider.sendEmail(email, '2FA Code', otpTemplate(otp));
         return;
     }
-
+    // let cachedTtl = await cacheProvider.ttl(`login-tries:${email}`);
+    // const ttl = ttl==-2 ?  toSec('minutes', 3) : cachedTtl;
+    // cachedTries = cachedTries ?? 4;
+    // await cacheProvider.set(`login-tries:${email}`, cachedTries - 1, ttl);
     const token = generateToken({
         id: user.id,
         email: user.email,
