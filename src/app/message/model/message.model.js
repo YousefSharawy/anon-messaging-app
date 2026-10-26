@@ -16,6 +16,7 @@ const messageModel = new Schema({
     sender: {
         type: Schema.Types.ObjectId,
         ref: 'User',
+
     },
     isDeleted: {
         type: Boolean,

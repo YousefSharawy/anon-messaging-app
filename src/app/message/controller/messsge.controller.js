@@ -27,3 +27,15 @@ export async function getAllMessages(req, res, next) {
         next(error);
     }
 }
+export async function sendIdentityRequest(req,res,next){
+    try {
+        const {recieverId,messageId} = req.body;
+        const request = await messageService.requestSenderIdentity(recieverId,messageId);
+        res.status(201).json({
+            message : "Request has been sent to the sender of message",
+            success : true
+        });
+    } catch (error) {
+        next(error)
+    }
+}

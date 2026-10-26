@@ -11,6 +11,5 @@ export async function findUserById(userId) {
     return await User.findOne({
         _id: userId,
         isDeleted: false,
-    })
-
+    })  
 }
