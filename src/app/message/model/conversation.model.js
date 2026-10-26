@@ -17,11 +17,10 @@ const schema = new Schema({
             sender: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         },
     ],
-
 },
     {
         timestamps: true
     }
 );
 
-export const Messages = model('Messages', schema);
+export const Conversation = model('Conversation', schema);

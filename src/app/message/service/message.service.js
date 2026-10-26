@@ -4,7 +4,7 @@ import * as authRepo from '../../auth/repo/auth.repo.js';
 
 import { userDoesNotExist } from '../../user/errors.js'
 import { AppError } from '../../../pkg/error/error.js';
-import { messageNotFound, requestIsPending, noRequestsFound, requestHasBeenUpdatedEarlier, requestIsAccepted, requestIsDeclined } from '../errors.js';
+import { messageNotFound, requestIsPending, noRequestsFound, requestHasBeenUpdatedEarlier, requestIsAccepted, requestIsDeclined , conversationNotFound } from '../errors.js';
 export async function sendMessage(content, sender, reciever) {
     //check reciever existence 
     const user = await userRepo.findUserById(reciever);
@@ -33,7 +33,7 @@ export async function requestSenderIdentity(requesterId, messageId) {
         throw errorByStatus[requestExisted.status];
     }
     const request = await messageRepo.sendRequestOfSenderIdentity(requesterId, message.sender, messageId);
-        return request;
+    return request;
 }
 export async function getAllRequests(userId) {
     const requests = await messageRepo.getAllRequests(userId);
@@ -43,7 +43,21 @@ export async function getAllRequests(userId) {
 export async function updateRequestStatus(status, userId, messageId) {
     const request = await messageRepo.getRequest(userId, messageId);
     if (!request) throw noRequestsFound;
-    if (request.status !== 'pending') throw requestHasBeenUpdatedEarlier;
+    else if (request.status !== 'pending') throw requestHasBeenUpdatedEarlier;
     const updatedRequest = await messageRepo.updateRequestStatus(status, userId, messageId);
+    if (status === 'accepted') {
+        await createConversation(userId, request.senderOfRequest, messageId);
+    }
     return updatedRequest;
+}
+export async function createConversation(sender, reciever, message) {
+      return await messageRepo.createConversation(sender, reciever, message);
+}   
+export async function sendMessageInConversation(content , sender, reciever) {
+    const conversation = await messageRepo.getConversation( sender, reciever);
+    if(!conversation) throw conversationNotFound;
+    const message = await messageRepo.createMessage(content , sender, reciever);
+    await conversation.messages.push({msgId:message.id,sender:message.sender});
+    await conversation.save();
+    return message ;
 }   

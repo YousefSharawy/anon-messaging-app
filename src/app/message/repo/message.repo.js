@@ -1,4 +1,5 @@
 
+import { Conversation } from '../model/conversation.model.js';
 import { Message } from '../model/message.model.js';
 import { RequestsModel } from '../model/requests.model.js';
 export async function createMessage(content, sender, reciever) {
@@ -40,7 +41,7 @@ export async function sendRequestOfSenderIdentity(requesterId, messageAuthorId, 
 }
 export async function checkRequestExistence(messageId) {
     return await RequestsModel.findOne({
-        messgaeId: messageId, 
+        messgaeId: messageId,
     });
 }
 export async function getAllRequests(userId) {
@@ -63,4 +64,22 @@ export async function updateRequestStatus(status, userId, messageId) {
             status: status,
         }
     );
+}
+export async function createConversation(sender, reciever, message) {
+    return await Conversation.create({
+        sender: sender,
+        reciever: reciever,
+        messages: [{
+            msgId: message,
+            sender: sender,
+        }]
+    });
+}
+export async function getConversation(sender, reciever) {
+    return await Conversation.findOne({
+        $or: [
+            { sender: sender, reciever: reciever },
+            { sender: reciever, reciever: sender },
+        ]
+    });
 }

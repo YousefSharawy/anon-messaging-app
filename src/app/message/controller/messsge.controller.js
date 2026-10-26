@@ -64,3 +64,16 @@ export async function updateRequestStatus(req, res, next) {
         next(error)
     }
 }
+export async function sendMessageInConverstaion(req, res, next) {
+    try {
+        const {content,recieverId}= req.body;
+        const message = await messageService.sendMessageInConversation(content,req.user.id,recieverId);
+        res.status(200).json({
+            message: `Message has been sent`,
+            success: true,
+            sentMessage: message
+        });
+    } catch (error) {
+        next(error)
+    }
+}
