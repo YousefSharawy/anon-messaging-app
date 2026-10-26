@@ -27,13 +27,26 @@ export async function getAllMessages(req, res, next) {
         next(error);
     }
 }
-export async function sendIdentityRequest(req,res,next){
+export async function sendIdentityRequest(req, res, next) {
     try {
-        const {recieverId,messageId} = req.body;
-        const request = await messageService.requestSenderIdentity(recieverId,messageId);
+        const { recieverId, messageId } = req.body;
+        const request = await messageService.requestSenderIdentity(recieverId, messageId);
         res.status(201).json({
-            message : "Request has been sent to the sender of message",
-            success : true
+            message: "Request has been sent to the sender of message",
+            success: true
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+export async function getAllRequests(req, res, next) {
+    try {
+        const requests = await messageService.getAllRequests(req.user.id);
+        console.log(req.user);
+        res.status(200).json({
+            message: "Requests:",
+            success: true,
+            requests: requests
         });
     } catch (error) {
         next(error)

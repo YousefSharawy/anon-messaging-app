@@ -21,25 +21,30 @@ export async function getAllMessages(userId) {
         }
     );
 }
-export async function getSenderIdForSpecificMessage(recieverId,messageId) {
+export async function getSenderIdForSpecificMessage(recieverId, messageId) {
     return await Message.findOne({
-        _id : messageId,
+        _id: messageId,
         reciever: recieverId,
-        isDeleted :false ,
+        isDeleted: false,
     },
     ).select({
         sender: 1
     });
 }
-export async function sendRequestOfSenderIdentity(senderId,recieverId,messgaeId) {
+export async function sendRequestOfSenderIdentity(senderId, recieverId, messgaeId) {
     return await RequestsModel.create({
-        recieverOfRequest : senderId,
-        senderOfRequest : recieverId,
-        messgaeId : messgaeId,
+        recieverOfRequest: senderId,
+        senderOfRequest: recieverId,
+        messgaeId: messgaeId,
     });
 }
 export async function checkRequestExistence(messageId) {
     return await RequestsModel.findOne({
-        messgaeId : messageId,
+        messgaeId: messageId,
+    });
+}
+export async function getAllRequests(userId) {
+    return await RequestsModel.find({
+        senderOfRequest: userId,
     });
 }

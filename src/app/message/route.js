@@ -6,5 +6,6 @@ messageRouter.post('/', messageController.sendMessage);
 messageRouter.post('/public',guard ,messageController.sendMessage);
 messageRouter.get('/',guard ,messageController.getAllMessages);
 messageRouter.post('/request-sender-identity',guard ,messageController.sendIdentityRequest);
+messageRouter.get('/get-all-requests',guard ,messageController.getAllRequests);
 
 export default messageRouter; 
