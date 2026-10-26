@@ -33,8 +33,8 @@ export async function getSenderIdForSpecificMessage(recieverId, messageId) {
 }
 export async function sendRequestOfSenderIdentity(senderId, recieverId, messgaeId) {
     return await RequestsModel.create({
-        recieverOfRequest: senderId,
-        senderOfRequest: recieverId,
+        recieverOfRequest: recieverId,
+        senderOfRequest: senderId,
         messgaeId: messgaeId,
     });
 }
@@ -45,6 +45,22 @@ export async function checkRequestExistence(messageId) {
 }
 export async function getAllRequests(userId) {
     return await RequestsModel.find({
-        senderOfRequest: userId,
+        recieverOfRequest: userId,
     });
+}
+export async function getRequest(userId, messageId) {
+    return await RequestsModel.findOne({
+        recieverOfRequest: userId,
+        messgaeId: messageId
+    });
+}
+export async function updateRequestStatus(status, userId, messageId) {
+    return await RequestsModel.updateOne({
+        recieverOfRequest: userId,
+        messgaeId: messageId
+    },
+        {
+            status: status,
+        }
+    );
 }

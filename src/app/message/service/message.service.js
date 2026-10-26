@@ -4,7 +4,7 @@ import * as authRepo from '../../auth/repo/auth.repo.js';
 
 import { userDoesNotExist } from '../../user/errors.js'
 import { AppError } from '../../../pkg/error/error.js';
-import { messageNotFound, requestAlreadyExists, noRequestsFound } from '../errors.js';
+import { messageNotFound, requestAlreadyExists, noRequestsFound,requestHasBeenUpdatedEarlier } from '../errors.js';
 export async function sendMessage(content, sender, reciever) {
     //check reciever existence 
     const user = await userRepo.findUserById(reciever);
@@ -33,3 +33,10 @@ export async function getAllRequests(userId) {
     if (requests.length === 0) throw new AppError('No requests found', 200);
     return requests;
 }
+export async function updateRequestStatus(status, userId, messageId) {
+   const request =  await messageRepo.getRequest(userId, messageId);
+   if(!request) throw noRequestsFound;
+   if(request.status !== 'pending') throw requestHasBeenUpdatedEarlier;
+   const updatedRequest = await messageRepo.updateRequestStatus(status,userId, messageId);
+    return updatedRequest;
+}   

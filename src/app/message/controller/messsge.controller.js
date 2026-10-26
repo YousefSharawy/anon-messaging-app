@@ -42,11 +42,23 @@ export async function sendIdentityRequest(req, res, next) {
 export async function getAllRequests(req, res, next) {
     try {
         const requests = await messageService.getAllRequests(req.user.id);
-        console.log(req.user);
         res.status(200).json({
             message: "Requests:",
             success: true,
             requests: requests
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+export async function updateRequestStatus(req, res, next) {
+    try {
+        const {status,messageId}= req.body;
+        const updatedRequest = await messageService.updateRequestStatus(status,req.user.id,messageId);
+        res.status(200).json({
+            message: `Request has been:${updatedRequest}`,
+            success: true,
+            requests: updatedRequest
         });
     } catch (error) {
         next(error)
