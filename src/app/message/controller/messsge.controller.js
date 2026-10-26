@@ -68,10 +68,23 @@ export async function sendMessageInConverstaion(req, res, next) {
     try {
         const {content,recieverId}= req.body;
         const message = await messageService.sendMessageInConversation(content,req.user.id,recieverId);
-        res.status(200).json({
+        res.status(201).json({
             message: `Message has been sent`,
             success: true,
             sentMessage: message
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+export async function getMessagesInConversation(req, res, next) {
+    try {
+        const {recieverId}= req.body;
+        const messages = await messageService.getMessagesInConversation(req.user.id,recieverId);
+        res.status(200).json({
+            message: `Messages has been fetched`,
+            success: true,
+            messages: messages
         });
     } catch (error) {
         next(error)

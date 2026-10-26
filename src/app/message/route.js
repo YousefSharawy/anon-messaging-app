@@ -9,5 +9,6 @@ messageRouter.post('/request-sender-identity',guard ,messageController.sendIdent
 messageRouter.get('/get-all-requests',guard ,messageController.getAllRequests);
 messageRouter.patch('/update-request-status',guard ,messageController.updateRequestStatus);
 messageRouter.post('/send-conversation-message',guard ,messageController.sendMessageInConverstaion);
+messageRouter.get('/get-conversation-messages',guard ,messageController.getMessagesInConversation);
 
 export default messageRouter; 

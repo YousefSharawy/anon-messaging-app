@@ -61,3 +61,8 @@ export async function sendMessageInConversation(content , sender, reciever) {
     await conversation.save();
     return message ;
 }   
+export async function getMessagesInConversation(sender, reciever) {
+    const conversation = await messageRepo.getConversation( sender, reciever);
+    if(!conversation) throw conversationNotFound;
+    return conversation.messages;
+}   
