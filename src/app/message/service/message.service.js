@@ -4,7 +4,7 @@ import * as authRepo from '../../auth/repo/auth.repo.js';
 
 import { userDoesNotExist } from '../../user/errors.js'
 import { AppError } from '../../../pkg/error/error.js';
-import { messageNotFound, requestAlreadyExists, noRequestsFound,requestHasBeenUpdatedEarlier } from '../errors.js';
+import { messageNotFound, requestIsPending, noRequestsFound, requestHasBeenUpdatedEarlier, requestIsAccepted, requestIsDeclined } from '../errors.js';
 export async function sendMessage(content, sender, reciever) {
     //check reciever existence 
     const user = await userRepo.findUserById(reciever);
@@ -20,13 +20,20 @@ export async function getAllMessages(userId) {
     return messages;
 }
 
-export async function requestSenderIdentity(recieverId, messageId) {
-    const message = await messageRepo.getSenderIdForSpecificMessage(recieverId, messageId);
+export async function requestSenderIdentity(requesterId, messageId) {
+    const message = await messageRepo.getSenderIdForSpecificMessage(requesterId, messageId);
     if (!message) throw messageNotFound;
     const requestExisted = await messageRepo.checkRequestExistence(messageId);
-    if (requestExisted) throw requestAlreadyExists;
-    const request = await messageRepo.sendRequestOfSenderIdentity(message.sender, recieverId, messageId);
-    return request;
+    if (requestExisted) {
+        const errorByStatus = {
+            pending: requestIsPending,
+            accepted: requestIsAccepted,
+            declined: requestIsDeclined,
+        };
+        throw errorByStatus[requestExisted.status];
+    }
+    const request = await messageRepo.sendRequestOfSenderIdentity(requesterId, message.sender, messageId);
+        return request;
 }
 export async function getAllRequests(userId) {
     const requests = await messageRepo.getAllRequests(userId);
@@ -34,9 +41,9 @@ export async function getAllRequests(userId) {
     return requests;
 }
 export async function updateRequestStatus(status, userId, messageId) {
-   const request =  await messageRepo.getRequest(userId, messageId);
-   if(!request) throw noRequestsFound;
-   if(request.status !== 'pending') throw requestHasBeenUpdatedEarlier;
-   const updatedRequest = await messageRepo.updateRequestStatus(status,userId, messageId);
+    const request = await messageRepo.getRequest(userId, messageId);
+    if (!request) throw noRequestsFound;
+    if (request.status !== 'pending') throw requestHasBeenUpdatedEarlier;
+    const updatedRequest = await messageRepo.updateRequestStatus(status, userId, messageId);
     return updatedRequest;
 }   

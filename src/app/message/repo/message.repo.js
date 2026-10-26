@@ -31,16 +31,16 @@ export async function getSenderIdForSpecificMessage(recieverId, messageId) {
         sender: 1
     });
 }
-export async function sendRequestOfSenderIdentity(senderId, recieverId, messgaeId) {
+export async function sendRequestOfSenderIdentity(requesterId, messageAuthorId, messgaeId) {
     return await RequestsModel.create({
-        recieverOfRequest: recieverId,
-        senderOfRequest: senderId,
+        senderOfRequest: requesterId,
+        recieverOfRequest: messageAuthorId,
         messgaeId: messgaeId,
     });
 }
 export async function checkRequestExistence(messageId) {
     return await RequestsModel.findOne({
-        messgaeId: messageId,
+        messgaeId: messageId, 
     });
 }
 export async function getAllRequests(userId) {

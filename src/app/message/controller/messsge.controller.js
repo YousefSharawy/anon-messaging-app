@@ -29,8 +29,8 @@ export async function getAllMessages(req, res, next) {
 }
 export async function sendIdentityRequest(req, res, next) {
     try {
-        const { recieverId, messageId } = req.body;
-        const request = await messageService.requestSenderIdentity(recieverId, messageId);
+        const {messageId } = req.body;
+        const request = await messageService.requestSenderIdentity(req.user.id,messageId);
         res.status(201).json({
             message: "Request has been sent to the sender of message",
             success: true
@@ -43,7 +43,7 @@ export async function getAllRequests(req, res, next) {
     try {
         const requests = await messageService.getAllRequests(req.user.id);
         res.status(200).json({
-            message: "Requests:",
+            message: "Requests have been retrieved successfully",
             success: true,
             requests: requests
         });
